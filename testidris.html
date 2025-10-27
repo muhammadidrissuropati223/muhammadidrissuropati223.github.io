@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akses Kamera</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        #video-preview { margin-top: 20px; border: 1px solid black; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Meminta Izin Kamera</h1>
+    <button id="request-permission">Aktifkan Kamera</button>
+    <br>
+    <video id="video-preview" width="320" height="240" autoplay></video>
+
+    <script>
+        document.getElementById('request-permission').addEventListener('click', () => {
+            // Meminta akses ke kamera (video)
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    const videoElement = document.getElementById('video-preview');
+                    videoElement.srcObject = stream;
+                    console.log('Akses kamera berhasil.');
+                })
+                .catch(err => {
+                    console.error('Terjadi kesalahan saat mengakses kamera: ', err);
+                    alert('Gagal mendapatkan akses kamera. Silakan periksa pengaturan izin browser Anda.');
+                });
+        });
+    </script>
+</body>
+</html>
