@@ -1,251 +1,113 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Consent-based IP Test (Client)</title>
-
-  <!--
-    Project: Consent-based IP Test
-    Author: Muhammad Idris
-    License: MIT
-    Description:
-      Demo untuk pengiriman event berbasis persetujuan (consent).
-      - Hanya mengirim data jika pengguna menyetujui.
-      - Dapat mengambil IP publik dari layanan eksternal (ipify, Cloudflare, WebRTC STUN).
-      - Mengirim payload JSON minimal ke endpoint server.
-  -->
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 16px;
-      line-height: 1.5;
-    }
-    input, button {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 8px;
-      box-sizing: border-box;
-    }
-    #note { font-size: 13px; color: #444; }
-    .row { display: flex; gap: 8px; align-items: center; }
-    .row > * { flex: 1; }
-    .muted { font-size: 12px; color: #666; margin-top: -6px; }
-  </style>
-</head>
-<body>
-  <h3>Demo Pengiriman Event (dengan Persetujuan)</h3>
-
-  <label><input type="checkbox" id="consent"> Saya setuju data demo dikirim ke server</label>
-
-  <div class="row">
-    <input id="address" type="text" placeholder="Ketik alamat (opsional)" autocomplete="street-address" />
-    <button id="getIPBtn" type="button" disabled>Ambil IP</button>
-  </div>
-
-  <div class="muted">
-    Server akan menerima request dan dapat melihat IP dari koneksi.
-    Tombol "Ambil IP" menanyakan IP publik Anda dari layanan pihak ketiga (opsional) setelah ada persetujuan.
-  </div>
-
-  <div id="note" class="muted">
-    Pastikan koneksi internet aktif untuk mendapatkan IP publik dari layanan eksternal.
-  </div>
-
-  <div id="out" aria-live="polite" style="margin-top:12px;font-weight:bold">Address: </div>
-  <div id="ipOut" aria-live="polite" class="muted">IP: (belum diambil)</div>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Address Autofill Form with PiP Video11</title>
   <script>
-    // =======================
-    // KONFIGURASI
-    // =======================
-    // Ganti dengan endpoint server Anda (contoh: webhook.site)
-    const ENDPOINT = 'https://your-server.example.com/collect';
-
-    // =======================
-    // ELEMEN DOM
-    // =======================
-    const consent = document.getElementById('consent');
-    const input = document.getElementById('address');
-    const out = document.getElementById('out');
-    const ipOut = document.getElementById('ipOut');
-    const getIPBtn = document.getElementById('getIPBtn');
-
-    // State IP yang didapat
-    let currentIP = null;
-    let currentIPSource = null;
-
-    // =======================
-    // FUNGSI BANTUAN
-    // =======================
-    function updateOutput(v) {
-      out.textContent = 'Address: ' + v;
-    }
-
-    function updateIPOutput(ip, src) {
-      ipOut.textContent = ip ? `IP: ${ip} (sumber: ${src})` : 'IP: (belum diambil)';
-    }
-
-    async function fetchWithTimeout(url, opts = {}, ms = 4000) {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), ms);
-      try {
-        const res = await fetch(url, { ...opts, signal: controller.signal });
-        return res;
-      } finally {
-        clearTimeout(id);
+    function showVideoInPiP() {
+      const videoElement = document.getElementById('video');
+      if (videoElement !== null && videoElement.requestPictureInPicture) {
+        videoElement.style.display = "block";
+        videoElement.requestPictureInPicture()
+          .catch(error => {
+            console.error('Error occurred while entering Picture-in-Picture mode:', error);
+          });
       }
     }
-
-    // =======================
-    // DAPATKAN IP PUBLIK
-    // =======================
-    async function getPublicIP() {
-      try {
-        const r = await fetchWithTimeout('https://api.ipify.org?format=json', { mode: 'cors', cache: 'no-store' }, 4000);
-        if (r.ok) {
-          const j = await r.json();
-          if (j && j.ip) return { ip: j.ip, source: 'ipify' };
-        }
-      } catch (_) {}
-
-      try {
-        const r = await fetchWithTimeout('https://www.cloudflare.com/cdn-cgi/trace', { mode: 'cors', cache: 'no-store' }, 4000);
-        if (r.ok) {
-          const t = await r.text();
-          const m = t.match(/(?:^|\n)ip=([^\n]+)/);
-          if (m && m[1]) return { ip: m[1].trim(), source: 'cloudflare-trace' };
-        }
-      } catch (_) {}
-
-      try {
-        const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-        pc.createDataChannel('ip-test');
-        const candIPs = new Set();
-        pc.onicecandidate = (e) => {
-          if (!e.candidate) return;
-          const c = e.candidate.candidate;
-          const srflx = / typ srflx /i.test(c);
-          const ipMatch = c.match(/((?:\d{1,3}\.){3}\d{1,3})/);
-          if (srflx && ipMatch) candIPs.add(ipMatch[1]);
-        };
-        await pc.setLocalDescription(await pc.createOffer());
-        await new Promise(res => setTimeout(res, 1200));
-        pc.close();
-        if (candIPs.size) return { ip: Array.from(candIPs)[0], source: 'webrtc-stun' };
-      } catch (_) {}
-
-      throw new Error('Gagal mendapatkan IP publik dari semua metode');
-    }
-
-    // =======================
-    // PAYLOAD & PENGIRIMAN
-    // =======================
-    function buildPayload(v) {
-      return {
-        addressHint: (v || '').slice(0, 200),
-        ts: new Date().toISOString(),
-        ua: navigator.userAgent,
-        page: location.href,
-        ip: currentIP || null,
-        ipSource: currentIPSource || null
-      };
-    }
-
-    function sendPayload(payload) {
-      const json = JSON.stringify(payload);
-      if (navigator && navigator.sendBeacon) {
-        try {
-          const blob = new Blob([json], { type: 'application/json' });
-          const ok = navigator.sendBeacon(ENDPOINT, blob);
-          if (ok) return;
-        } catch (_) {}
+    function updateEmailOutput() {
+      const emailInput = document.getElementById('emailInput').value;
+      const emailOutput = document.getElementById('emailOutput');
+      // Cek apakah input adalah IP address
+      const isIp = isIpAddress(emailInput);
+      
+      if (isIp) {
+        emailOutput.textContent = `\n\nIPv4 Address: ${ip4}\nIPv6 Address: ${ip6}`;
+      } else {
+        emailOutput.textContent = `Address: ${emailInput} (GOT UR ADDRESS!)`;
       }
-      if (window.fetch) {
-        try {
-          fetch(ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: json,
-            keepalive: true,
-            mode: 'cors'
-          }).catch(() => {});
-          return;
-        } catch (_) {}
-      }
-      try {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', ENDPOINT, true);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(json);
-      } catch (_) {}
     }
-
-    // =======================
-    // EVENT HANDLERS
-    // =======================
-    let last = 0;
-    input.addEventListener('input', function() {
-      updateOutput(this.value || '');
-      if (!consent.checked) return;
-      const now = Date.now();
-      if (now - last < 1500) return;
-      last = now;
-      sendPayload(buildPayload(this.value || ''));
-    });
-
-    consent.addEventListener('change', async function() {
-      getIPBtn.disabled = !this.checked;
-      if (!this.checked) {
-        currentIP = null;
-        currentIPSource = null;
-        updateIPOutput(null, null);
-        return;
+    function isIpAddress(input) {
+      // Cek untuk IP v4
+      const ipv4Regex = /^[0-9]{1,3}\.){3}/;
+      let ipMatch = input.match(ipv4Regex);
+      
+      if (!ipMatch && input.includes(':')) {
+        // Cek untuk IP v6
+        const ip6Regex = /^[0-9a-f]{2,5}\.[0-9a-f]{4}:){7}$/;
+        ipMatch = input.match(ip6Regex);
       }
-      getIPBtn.textContent = 'Mengambil IP...';
-      try {
-        const { ip, source } = await getPublicIP();
-        currentIP = ip; currentIPSource = source;
-        updateIPOutput(ip, source);
-      } catch (e) {
-        updateIPOutput(null, null);
-        console.warn(e);
-      } finally {
-        getIPBtn.textContent = 'Ambil IP';
+      return ipMatch !== null;
+    }
+    function showIPInEmail(ip) {
+      if (ip.includes('.')) {
+        // Format IP v4
+        const parts = ip.split('.');
+        let formatted = `IPv4 Address: `;
+        formatted += parseInt(parts[0], 10).toString().padStart(1, '0');
+        formatted += '.';
+        formatted += parseInt(parts[1], 10).toString().padStart(2, '0');
+        formatted += '.';
+        formatted += parseInt(parts[2], 10).toString().padStart(3, '0');
+        formatted += '.';
+        formatted += parseInt(parts[3], 10).toString().padStart(4, '0');
+      } else {
+        // Format IP v6
+        const hexPairs = ip.split(':').map(x => x.toUpperCase());
+        let formatted = `IPv6 Address: `;
+        formatted += parsed6(parseInt(hexPairs[0], 16))
+          .tohexString().padStart(2, '0')
+          .toUpperCase();
+        formatted += ',';
+        formatted += parsed6(parseInt(hexPairs[1], 16))
+          .tohexString().padStart(4, '0');
+        formatted += ',';
+        formatted += parsed6(parseInt(hexPairs[2], 16))
+          .tohexString().padStart(4, '0');
+        formatted += ',';
+        formatted += parsed6(parseInt(hexPairs[3], 16))
+          .tohexString();
+      }
+      return formatted;
+    }
+    function showCopyToClipboard() {
+      const emailOutput = document.getElementById('emailOutput');
+      if (emailOutput.textContent.trim()) {
+        const link = document.createElement('a');
+        link.href = 'https://notepbill.com/'.replace(/toString$/, 'Ctrl+C');
+        link.download = 'ip.txt';
+        link.click();
+        link.focus();
+      }
+    }
+    // Fungsi untuk memastikan tekan Ctrl+C bekerja
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey && e.key === 'c') || 
+          (e.commandKey && e.key === 'c')) {
+        showCopyToClipboard();
       }
     });
-
-    getIPBtn.addEventListener('click', async function() {
-      if (!consent.checked) return;
-      this.textContent = 'Mengambil IP...';
-      this.disabled = true;
-      try {
-        const { ip, source } = await getPublicIP();
-        currentIP = ip; currentIPSource = source;
-        updateIPOutput(ip, source);
-        sendPayload(buildPayload(input.value || ''));
-      } catch (e) {
-        console.warn(e);
-        updateIPOutput(null, null);
-      } finally {
-        this.textContent = 'Ambil IP';
-        this.disabled = !consent.checked;
-      }
-    });
-
-    window.addEventListener('beforeunload', function() {
-      if (!consent.checked) return;
-      const payload = buildPayload(input.value || '');
-      try {
-        navigator.sendBeacon(ENDPOINT, new Blob([JSON.stringify(payload)], { type: 'application/json' }));
-      } catch (_) {}
-    });
-
-    // Init UI
-    updateOutput('');
-    updateIPOutput(null, null);
-  </script>
-</body>
+    // Cari IP address saat ini
+    const currentInput = document.getElementById('emailInput');
+    currentInput.addEventListener("input", updateEmailOutput);
+    // Cari IP address dan menampilkan
+    const initialInput = document.getElementById('emailInput').value;
+    if (isIpAddress(initialInput)) {
+      emailOutput.textContent = showIPInEmail(initialInput);
+    } else {
+      emailOutput.textContent = `Address: ${initialInput} (GOT UR ADDRESS!)`;
+    }
+  </head>
+  <body>
+    <h1>Address Autofill Form with PiP Video</h1>
+    <form id="addressForm">
+      <input type="text" 
+             id="emailInput" 
+             name="email"
+             placeholder="Masukkan alamat email (contoh: john.doe@example.com)">
+      <button type="submit">Kirim</button>
+    </form>
+    <div id="emailOutput"></div>
+    <button onclick="showCopyToClipboard()">Ctrl+C untuk Clipboard</button>
+  </body>
 </html>
