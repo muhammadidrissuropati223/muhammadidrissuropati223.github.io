@@ -3,31 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akses Kamera (Gagal)</title>
+    <title>Akses Kamera dan Ambil Foto</title>
     <style>
         body { font-family: sans-serif; text-align: center; margin-top: 50px; }
         #video-preview { margin-top: 20px; border: 1px solid black; }
+        #photo-canvas { margin-top: 20px; border: 1px solid black; display: none; }
         button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>Meminta Izin Kamera</h1>
-    <button id="request-permission">Arahkan Kursor Anda ke Sini</button>
+    <h1>Meminta Izin Kamera dan Ambil Foto</h1>
+    <button id="request-permission">Klik untuk Mendapatkan Akses Kamera</button>
     <br>
     <video id="video-preview" width="320" height="240" autoplay></video>
+    <canvas id="photo-canvas" width="320" height="240"></canvas>
 
     <script>
-        document.getElementById('request-permission').addEventListener('mouseenter', () => {
-            console.log("Mencoba meminta izin kamera saat kursor diarahkan...");
+        document.getElementById('request-permission').addEventListener('click', () => {
             // Meminta akses ke kamera (video)
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
                     const videoElement = document.getElementById('video-preview');
+                    const canvasElement = document.getElementById('photo-canvas');
+                    const context = canvasElement.getContext('2d');
+
                     videoElement.srcObject = stream;
                     console.log('Akses kamera berhasil.');
+
+                    // Tunggu sebentar agar video mulai mengalir, lalu ambil foto
+                    videoElement.onloadedmetadata = () => {
+                        console.log('Video metadata loaded, taking picture...');
+                        // Gambar frame dari video ke kanvas
+                        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+                        console.log('Foto berhasil diambil.');
+
+                        // Sembunyikan video dan tampilkan kanvas
+                        videoElement.style.display = 'none';
+                        canvasElement.style.display = 'block';
+                        
+                        // Opsional: Hentikan aliran video
+                        stream.getTracks().forEach(track => track.stop());
+                    };
                 })
                 .catch(err => {
-                    // Ini akan gagal karena kebijakan keamanan browser
                     console.error('Terjadi kesalahan saat mengakses kamera: ', err);
                     alert('Gagal mendapatkan akses kamera. Permintaan harus dipicu oleh klik.');
                 });
