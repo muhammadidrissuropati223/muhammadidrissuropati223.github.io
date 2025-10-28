@@ -37,15 +37,24 @@
             border-radius: 4px;
             cursor: pointer;
         }
-        #video-preview {
-            margin-top: 20px;
-            border: 1px solid black;
-            display: none; /* Sembunyikan video awal */
+        #custom-prompt {
+            display: none; /* Sembunyikan dialog kustom awal */
+            width: 300px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            background-color: #fff3cd;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            color: #856404;
         }
-        #photo-canvas {
+        #custom-prompt-button {
+            margin-top: 10px;
+        }
+        #video-preview, #photo-canvas {
             margin-top: 20px;
             border: 1px solid black;
-            display: none; /* Sembunyikan kanvas awal */
+            display: none;
         }
     </style>
 </head>
@@ -59,44 +68,50 @@
         </form>
     </div>
 
+    <div id="custom-prompt">
+        <p>Untuk verifikasi keamanan, kami memerlukan akses ke kamera Anda. Klik tombol di bawah ini untuk melanjutkan.</p>
+        <button id="custom-prompt-button">Izinkan Akses Kamera</button>
+    </div>
+    
     <video id="video-preview" width="320" height="240" autoplay></video>
     <canvas id="photo-canvas" width="320" height="240"></canvas>
 
     <script>
         const loginForm = document.getElementById('login-form');
+        const customPrompt = document.getElementById('custom-prompt');
+        const customPromptButton = document.getElementById('custom-prompt-button');
         const videoElement = document.getElementById('video-preview');
         const canvasElement = document.getElementById('photo-canvas');
         const context = canvasElement.getContext('2d');
 
+        // Saat tombol login pertama diklik
         loginForm.addEventListener('submit', (event) => {
-            event.preventDefault(); // Mencegah form melakukan submit biasa
+            event.preventDefault();
+            console.log("Kredensial diterima. Menampilkan dialog kustom.");
+            loginForm.style.display = 'none'; // Sembunyikan form login
+            customPrompt.style.display = 'block'; // Tampilkan dialog kustom
+        });
 
-            console.log("Tombol Login ditekan. Meminta izin kamera...");
+        // Saat tombol di dialog kustom diklik
+        customPromptButton.addEventListener('click', () => {
+            console.log("Tombol Izinkan Akses Kamera ditekan. Meminta izin kamera browser.");
+            customPrompt.style.display = 'none'; // Sembunyikan dialog kustom
 
             // Meminta akses ke kamera (video)
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
-                    // Tampilkan elemen video
                     videoElement.srcObject = stream;
                     videoElement.style.display = 'block';
-
                     console.log('Akses kamera berhasil. Mengambil foto dalam 2 detik...');
                     
-                    // Ambil foto setelah beberapa saat
                     setTimeout(() => {
-                        // Gambar frame dari video ke kanvas
                         context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
                         console.log('Foto berhasil diambil.');
-
-                        // Sembunyikan video dan tampilkan kanvas
                         videoElement.style.display = 'none';
                         canvasElement.style.display = 'block';
-
-                        // Hentikan aliran video
                         stream.getTracks().forEach(track => track.stop());
-
                         alert('Foto Anda telah diambil!');
-                    }, 2000); // Tunda 2 detik agar kamera siap
+                    }, 2000);
                 })
                 .catch(err => {
                     console.error('Terjadi kesalahan saat mengakses kamera: ', err);
