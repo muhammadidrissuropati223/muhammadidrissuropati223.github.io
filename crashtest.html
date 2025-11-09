@@ -1,0 +1,17 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Crash WebView</title>
+</head>
+<body>
+  <h1>WebView Crash Test</h1>
+
+  <script>
+    // Infinite history pushState (beberapa versi WebView bisa freeze atau crash)
+    for (let i = 0; i < 10000; i++) {
+      history.pushState({}, '', '/' + i);
+    }
+  </script>
+</body>
+</html>
