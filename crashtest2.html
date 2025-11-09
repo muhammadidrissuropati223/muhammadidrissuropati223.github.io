@@ -1,0 +1,18 @@
+<!-- alert-spam.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Alert Spam</title>
+</head>
+<body>
+  <h1>Testing alert loop</h1>
+
+  <script>
+    setTimeout(function() {
+      while (true) {
+        alert("Boom!");
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
