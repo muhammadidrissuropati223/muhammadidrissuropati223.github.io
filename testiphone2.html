@@ -1,13 +1,19 @@
-<!-- Simulasi page yang bisa dipakai untuk tes rendering aneh -->
+<!-- alert_spam.html -->
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Unicode Crash Test</title>
-</head>
-<body>
-  <p>
-    &#xD83D;&#xDC69;&#x200D;&#xD83D;&#xDC69;&#x200D;&#xD83D;&#xDC66;&#x200D;&#xD83D;&#xDC66; <!-- Kombinasi emoji keluarga panjang -->
-  </p>
-</body>
+  <head>
+    <title>Alert Bomb Test</title>
+    <script>
+      // Gunakan dengan hati-hati saat diuji di WebView / Browser target
+      window.onload = function () {
+        let i = 0;
+        while (true) {
+          alert("Alert spam " + (++i));
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Testing alert spam...</h1>
+  </body>
 </html>
