@@ -1,5 +1,20 @@
-for (let i = 0; i < 100; i++) {
-    setTimeout(() => {
-        while (true) {}
-    }, 0);
-}
+import unicodedata
+
+def sanitize_input(text):
+    """
+    Remove dangerous Unicode categories and limit text length.
+    """
+    cleaned = []
+    for char in text:
+        cat = unicodedata.category(char)
+        if cat.startswith("C"):  # Other, control characters
+            continue
+        if cat in ("Cf", "Cs"):  # Format, surrogate
+            continue
+        cleaned.append(char)
+
+    return ''.join(cleaned[:1000])  # Limit to 1000 chars
+
+# Contoh uji
+user_input = "some potentially bad 🏳️‍🌈\u200d\u200d\u200d\u200d\u200d\u200d text"
+print("Sanitized:", sanitize_input(user_input))
