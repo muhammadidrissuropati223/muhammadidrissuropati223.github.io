@@ -1,35 +1,3 @@
-import XCTest
-
-final class StressLoopTests: XCTestCase {
-
-    func testHeavyLoopMillions() {
-        let expectation = XCTestExpectation(description: "Run heavy loop")
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            var allocations: [Data] = []
-            let totalIterations = 5_000_000 // 5 juta loop
-            let logInterval = 500_000
-            let memoryBlockSize = 1024 // 1 KB per block
-
-            for i in 1...totalIterations {
-                autoreleasepool {
-                    // Alokasi data kecil agar tetap lambat tapi aman
-                    let data = Data(repeating: UInt8(i % 255), count: memoryBlockSize)
-                    allocations.append(data)
-
-                    // Simulasi sedikit kalkulasi
-                    _ = data.reduce(0, +)
-                }
-
-                if i % logInterval == 0 {
-                    print("🔁 Loop count: \(i) / \(totalIterations)")
-                }
-            }
-
-            print("✅ Finished looping \(totalIterations) times")
-            expectation.fulfill()
-        }
-
-        wait(for: [expectation], timeout: 300) // timeout 5 menit
-    }
+for _ in 0..<Int.max {
+    _ = Data(repeating: 0, count: 10_000_000)
 }
