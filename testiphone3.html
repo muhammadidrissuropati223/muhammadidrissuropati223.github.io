@@ -1,0 +1,7 @@
+<script>
+  for (let i = 0; i < 100000; i++) {
+    const el = document.createElement('div');
+    el.innerText = '🐛 Bug Bounty DOM Freeze #' + i;
+    document.body.appendChild(el);
+  }
+</script>
