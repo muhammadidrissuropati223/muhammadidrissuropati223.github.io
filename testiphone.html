@@ -2,26 +2,35 @@ import XCTest
 
 final class StressTests: XCTestCase {
 
-    func testMemoryLeakSimulation() {
-        var bigArray = [Data]()
-        var counter = 0
-        do {
-            while true {
-                let chunk = Data(repeating: 0, count: 5_000_000) // 5MB
-                bigArray.append(chunk)
-                counter += 1
-                if counter % 10 == 0 {
-                    print("Allocated \(counter * 5) MB")
+    func testIntensiveMemoryAndCPU() {
+        // Jalankan pada background thread agar UI tetap responsif
+        let expectation = XCTestExpectation(description: "Stress test")
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            var dataCache = [Data]()
+            var counter = 0
+
+            // Simulasi alokasi besar + kalkulasi berat
+            while counter < 500 {
+                autoreleasepool {
+                    let blob = Data(repeating: UInt8.random(in: 0...255), count: 10_000_000) // 10 MB
+                    dataCache.append(blob)
+
+                    // Simulasi komputasi berat
+                    let numbers = (0..<200_000).map { _ in Int.random(in: 0..<10_000) }
+                    _ = numbers.sorted()
+
+                    if counter % 10 == 0 {
+                        print("✅ Allocated \(counter * 10) MB")
+                    }
+
+                    counter += 1
                 }
             }
-        } catch {
-            XCTFail("Unexpected error: \(error)")
-        }
-    }
 
-    func testCPULoad() {
-        let numbers = (0..<1_000_000).map { _ in Int.random(in: 0..<10_000) }
-        let _ = numbers.sorted()
-        print("✅ CPU load test completed successfully")
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 60)
     }
 }
